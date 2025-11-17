@@ -9,6 +9,9 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 USE_SELENIUM = False
 
 BASE = "https://www.boaconsulta.com"
@@ -39,9 +42,6 @@ HEADERS = {
 
 session = requests.Session()
 session.headers.update(HEADERS)
-
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 retry_strategy = Retry(
     total=5,
