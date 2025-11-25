@@ -1,13 +1,32 @@
 ﻿cidade_oficial,uf_oficial,cidade_norm,tipo_profissional,qtd_profissionais,preco_medio,preco_mediano,preco_min,preco_max
-Belo Horizonte,MG,belo horizonte,psicologo,657,223.22222222222223,150.0,2.0,15000.0
-Belo Horizonte,MG,belo horizonte,psiquiatra,215,504.27441860465115,490.0,2.0,1300.0
-Porto Alegre,RS,porto alegre,psicologo,489,200.46216768916156,150.0,1.0,15000.0
-Porto Alegre,RS,porto alegre,psiquiatra,128,421.2421875,400.0,150.0,2000.0
-Rio de Janeiro,RJ,rio de janeiro,psicologo,826,267.6694915254237,180.0,2.0,35000.0
+Belo Horizonte,MG,belo horizonte,psicologo,663,221.08748114630467,150.0,2.0,15000.0
+Belo Horizonte,MG,belo horizonte,psiquiatra,206,503.9271844660194,485.0,2.0,1300.0
+Belém,AL,belem,psicologo,113,490.62831858407077,150.0,2.0,30000.0
+Brasília,DF,brasilia,psicologo,633,244.95260663507108,180.0,1.0,12500.0
+Brasília,DF,brasilia,psiquiatra,108,552.0925925925926,500.0,220.0,1300.0
+Campinas,SP,campinas,psicologo,326,327.54294478527606,150.0,2.0,45000.0
+Campinas,SP,campinas,psiquiatra,94,511.78723404255317,500.0,130.0,1200.0
+Curitiba,PR,curitiba,psicologo,962,178.57068607068607,150.0,1.0,8000.0
+Curitiba,PR,curitiba,psiquiatra,156,457.8397435897436,450.0,1.0,1200.0
+Fortaleza,CE,fortaleza,psicologo,375,252.06933333333333,150.0,45.0,18000.0
+Fortaleza,CE,fortaleza,psiquiatra,79,503.8607594936709,500.0,130.0,1300.0
+Goiânia,GO,goiania,psicologo,339,246.33038348082596,150.0,2.0,9000.0
+Goiânia,GO,goiania,psiquiatra,84,526.8809523809524,500.0,2.0,1150.0
+Guarulhos,SP,guarulhos,psicologo,219,217.5799086757991,120.0,2.0,18000.0
+Guarulhos,SP,guarulhos,psiquiatra,4,445.0,315.0,150.0,1000.0
+Manaus,AM,manaus,psicologo,132,239.71212121212122,200.0,2.0,3000.0
+Manaus,AM,manaus,psiquiatra,19,533.0,550.0,297.0,700.0
+Porto Alegre,RS,porto alegre,psicologo,483,201.21946169772258,150.0,1.0,15000.0
+Porto Alegre,RS,porto alegre,psiquiatra,125,418.712,400.0,150.0,2000.0
+Recife,PE,recife,psicologo,170,197.44117647058823,165.0,2.0,1600.0
+Recife,PE,recife,psiquiatra,73,509.28767123287673,500.0,180.0,1000.0
+Rio de Janeiro,RJ,rio de janeiro,psicologo,829,267.14716525934864,180.0,2.0,35000.0
 Rio de Janeiro,RJ,rio de janeiro,psicoterapeuta,2,445.0,445.0,400.0,490.0
-Rio de Janeiro,RJ,rio de janeiro,psiquiatra,293,505.8976109215017,500.0,2.0,2000.0
-Salvador,BA,salvador,psicologo,360,205.83055555555555,150.0,2.0,12000.0
-Salvador,BA,salvador,psiquiatra,77,506.7792207792208,500.0,2.0,1000.0
-São Paulo,SP,sao paulo,psicologo,1164,259.8823024054983,200.0,2.0,5000.0
+Rio de Janeiro,RJ,rio de janeiro,psiquiatra,322,496.2670807453416,485.0,2.0,2000.0
+Salvador,BA,salvador,psicologo,360,206.42222222222222,150.0,2.0,12000.0
+Salvador,BA,salvador,psiquiatra,76,506.60526315789474,500.0,2.0,1000.0
+São Luís,MA,sao luis,psicologo,105,174.92380952380952,165.0,50.0,390.0
+São Luís,MA,sao luis,psiquiatra,21,471.04761904761904,450.0,2.0,800.0
+São Paulo,SP,sao paulo,psicologo,1164,259.79639175257734,200.0,2.0,5000.0
 São Paulo,SP,sao paulo,psicoterapeuta,30,263.1666666666667,182.5,100.0,800.0
-São Paulo,SP,sao paulo,psiquiatra,436,554.9518348623853,545.0,2.0,2500.0
+São Paulo,SP,sao paulo,psiquiatra,598,568.7207357859531,550.0,2.0,2500.0

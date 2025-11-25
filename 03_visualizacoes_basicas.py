@@ -3,7 +3,7 @@
 03_visualizacoes_basicas.py
 
 Gera alguns gráficos exploratórios a partir de:
-  output/base_precos_mentais_2023.csv
+  output/base_precos_mentais_2020_2024.csv
 
 Requer:
   - pandas
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Caminho da base integrada
-BASE_PATH = os.path.join("output", "base_precos_mentais_2023.csv")
+BASE_PATH = os.path.join("output", "base_precos_mentais_2020_2024.csv")
 
 
 def main():
@@ -171,7 +171,7 @@ def main():
             y="preco_medio",
         )
         plt.title("Casos F32/F41 x preço médio (por município)")
-        plt.xlabel("Nº de casos F32/F41 (2023)")
+        plt.xlabel("Nº de casos F32/F41 (2020-2024)")
         plt.ylabel("Preço médio da sessão (R$)")
         plt.tight_layout()
         plt.savefig("figuras/scatter_casos_preco.png", dpi=150)

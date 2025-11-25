@@ -32,10 +32,19 @@ PATH_BC_PSICOT = os.path.join(BASE_BOACONSULTA, "psicoterapeutas_boaconsulta.csv
 CITY_SLUG_TO_NAME_UF = {
     "sao-paulo-sp": ("São Paulo", "SP"),
     "rio-de-janeiro-rj": ("Rio de Janeiro", "RJ"),
-    "belo-horizonte-mg": ("Belo Horizonte", "MG"),
-    "porto-alegre-rs": ("Porto Alegre", "RS"),
+    "brasilia-df": ("Brasília", "DF"),
     "salvador-ba": ("Salvador", "BA"),
-    # se tiver mais, coloca aqui
+    "fortaleza-ce": ("Fortaleza", "CE"),
+    "belo-horizonte-mg": ("Belo Horizonte", "MG"),
+    "manaus-am": ("Manaus", "AM"),
+    "curitiba-pr": ("Curitiba", "PR"),
+    "recife-pe": ("Recife", "PE"),
+    "goiania-go": ("Goiânia", "GO"),
+    "belem-al": ("Belém", "AL"),  # conforme aparece na plataforma
+    "porto-alegre-rs": ("Porto Alegre", "RS"),
+    "guarulhos-sp": ("Guarulhos", "SP"),
+    "campinas-sp": ("Campinas", "SP"),
+    "sao-luis-ma": ("São Luís", "MA"),
 }
 
 

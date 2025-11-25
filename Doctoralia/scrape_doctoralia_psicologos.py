@@ -11,12 +11,24 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; DataScienceProject/1.0; +https://example.com/)",
 }
 
+# ---- CIDADES QUE SERÃO RASPADAS -----------------------------------------
+# você pode adicionar/remover à vontade
 CITY_SLUGS = [
     "sao-paulo-sp",
     "rio-de-janeiro-rj",
-    "belo-horizonte-mg",
-    "porto-alegre-rs",
+    "brasilia-df",
     "salvador-ba",
+    "fortaleza-ce",
+    "belo-horizonte-mg",
+    "manaus-am",
+    "curitiba-pr",
+    "recife-pe",
+    "goiania-go",
+    "belem-al",  # aparece na interface como “Belém Alagoas”
+    "porto-alegre-rs",
+    "guarulhos-sp",
+    "campinas-sp",
+    "sao-luis-ma",
 ]
 
 # Mapeia slug -> cidade bonitinha / UF / texto do "loc" da busca
@@ -31,20 +43,70 @@ CITY_INFO = {
         "uf": "RJ",
         "loc": "Rio de Janeiro",
     },
+    "brasilia-df": {
+        "cidade": "Brasília",
+        "uf": "DF",
+        "loc": "Brasília",
+    },
+    "salvador-ba": {
+        "cidade": "Salvador",
+        "uf": "BA",
+        "loc": "Salvador",
+    },
+    "fortaleza-ce": {
+        "cidade": "Fortaleza",
+        "uf": "CE",
+        "loc": "Fortaleza",
+    },
     "belo-horizonte-mg": {
         "cidade": "Belo Horizonte",
         "uf": "MG",
         "loc": "Belo Horizonte",
+    },
+    "manaus-am": {
+        "cidade": "Manaus",
+        "uf": "AM",
+        "loc": "Manaus",
+    },
+    "curitiba-pr": {
+        "cidade": "Curitiba",
+        "uf": "PR",
+        "loc": "Curitiba",
+    },
+    "recife-pe": {
+        "cidade": "Recife",
+        "uf": "PE",
+        "loc": "Recife",
+    },
+    "goiania-go": {
+        "cidade": "Goiânia",
+        "uf": "GO",
+        "loc": "Goiânia",
+    },
+    "belem-al": {
+        "cidade": "Belém",
+        "uf": "AL",
+        "loc": "Belém",  # texto que vai no parâmetro loc
     },
     "porto-alegre-rs": {
         "cidade": "Porto Alegre",
         "uf": "RS",
         "loc": "Porto Alegre",
     },
-    "salvador-ba": {
-        "cidade": "Salvador",
-        "uf": "BA",
-        "loc": "Salvador",
+    "guarulhos-sp": {
+        "cidade": "Guarulhos",
+        "uf": "SP",
+        "loc": "Guarulhos",
+    },
+    "campinas-sp": {
+        "cidade": "Campinas",
+        "uf": "SP",
+        "loc": "Campinas",
+    },
+    "sao-luis-ma": {
+        "cidade": "São Luís",
+        "uf": "MA",
+        "loc": "São Luís",
     },
 }
 
@@ -62,16 +124,11 @@ SPECIALIZATIONS = {
     },
 }
 
-# Controles básicos
-MAX_PAGES = 100  # máximo de páginas por cidade/especialidade
-DELAY_RANGE = (1.0, 2.0)  # segundos entre requisições
+MAX_PAGES = 100
+DELAY_RANGE = (1.0, 2.0)
 
 
 def parse_price_text(text):
-    """
-    Extrai valor numérico de 'R$ 180', 'a partir de r$ 300', etc.
-    Retorna (raw_text, float_value_or_None)
-    """
     if not text:
         return "", None
     raw = text.strip()
@@ -87,11 +144,6 @@ def parse_price_text(text):
 
 
 def get_search_page(query, loc, spec_id, page=1):
-    """
-    Monta e baixa a página de pesquisa.
-    Exemplo base:
-    https://www.doctoralia.com.br/pesquisa?q=Psiquiatra&loc=São+Paulo&filters[specializations][]=78&page=2
-    """
     params = {
         "q": query,
         "loc": loc,
@@ -107,16 +159,9 @@ def get_search_page(query, loc, spec_id, page=1):
 
 
 def parse_listing_html(html, base_url, tipo, loc_cidade):
-    """
-    Lê o HTML da página de pesquisa e extrai:
-    nome, url, preço, bairro/região, CRM/CRP/CFP etc.
-    tipo: "psicologo" ou "psiquiatra"
-    loc_cidade: ex. "São Paulo" (serve pra filtrar resultados de outras cidades)
-    """
     soup = BeautifulSoup(html, "html.parser")
     results = []
 
-    # Regex pra identificar URL de perfil
     if tipo == "psicologo":
         prof_pattern = r"/[a-z0-9\-\_]+/psicolog"
     else:
@@ -127,13 +172,11 @@ def parse_listing_html(html, base_url, tipo, loc_cidade):
         if not href:
             continue
 
-        # filtrar perfis
         if not re.search(prof_pattern, href, flags=re.IGNORECASE):
             continue
 
         perfil_url = urljoin(base_url, href)
 
-        # subir alguns níveis pra pegar o "cartão" inteiro
         block = a
         for _ in range(5):
             if not block.parent:
@@ -148,25 +191,17 @@ def parse_listing_html(html, base_url, tipo, loc_cidade):
 
         text = block.get_text(separator=" | ", strip=True)
 
-        # filtrar só resultados da cidade de interesse (loc_cidade)
-        if loc_cidade.lower() not in text.lower():
-            # pode ser teleconsulta sem cidade explícita; se quiser manter, comente esse 'continue'
-            pass  # aqui optei por não excluir, pra não perder teleconsulta
-
         name = a.get_text(strip=True)
         if not name:
             continue
 
-        # preço: primeira ocorrência de R$
         price_match = re.search(r"[Rr]\$[\s\xa0]*[\d\.\,]+", text)
         price_text = price_match.group(0) if price_match else ""
         price_raw, price_num = parse_price_text(price_text)
 
-        # se não tiver preço, ignorar (seu pedido)
         if price_num is None:
             continue
 
-        # CRM / CRP / CFP etc — pega um trechinho que contenha isso
         crp_crm = ""
         m_cr = re.search(
             r"(CRP[^|]*|CRM[^|]*|CFP[^|]*|CRO[^|]*|CRE[^|]*)",
@@ -176,7 +211,6 @@ def parse_listing_html(html, base_url, tipo, loc_cidade):
         if m_cr:
             crp_crm = m_cr.group(0).strip()
 
-        # tentar extrair região/bairro — linha com Rua/Av./Avenida ou que seja só o bairro
         regiao = ""
         parts = [p.strip() for p in text.split(" | ") if p.strip()]
         for p in parts:
@@ -184,7 +218,6 @@ def parse_listing_html(html, base_url, tipo, loc_cidade):
             if any(k in low for k in ["rua ", "av.", "avenida", "rodovia", "travessa"]):
                 regiao = p
                 break
-        # segunda tentativa: bairros típicos (sem 'rua')
         if not regiao:
             for p in parts:
                 if any(
@@ -212,7 +245,6 @@ def parse_listing_html(html, base_url, tipo, loc_cidade):
             }
         )
 
-    # deduplicar por url (mantendo o último registro)
     uniq = {}
     for r in results:
         uniq[r["url"]] = r
@@ -220,11 +252,6 @@ def parse_listing_html(html, base_url, tipo, loc_cidade):
 
 
 def scrape_professional_type(tipo):
-    """
-    tipo: "psicologo" ou "psiquiatra"
-    Retorna DataFrame com colunas:
-    nome, preco, cidade, uf, crp, url, cidade_slug, regiao, preco_raw
-    """
     spec_info = SPECIALIZATIONS[tipo]
     all_rows = []
 
@@ -251,17 +278,14 @@ def scrape_professional_type(tipo):
                 break
 
             rows = parse_listing_html(html, url, tipo=tipo, loc_cidade=cidade)
-            # tirar os já vistos
             new_rows = [r for r in rows if r["url"] not in seen_urls]
 
             print(
                 f"  {cidade_slug} página {page}: {len(rows)} registros, {len(new_rows)} novos"
             )
 
-            if not new_rows:
-                # se não veio nada novo, provavelmente acabou a paginação
-                if page > 1:
-                    break
+            if not new_rows and page > 1:
+                break
 
             for r in new_rows:
                 r["cidade"] = cidade
@@ -289,7 +313,6 @@ def scrape_professional_type(tipo):
 
     df = pd.DataFrame(all_rows)
 
-    # garantir colunas
     for col in [
         "nome",
         "preco",
@@ -304,13 +327,9 @@ def scrape_professional_type(tipo):
         if col not in df.columns:
             df[col] = ""
 
-    # filtrar só quem realmente tem preço numérico
     df = df[df["preco"].notna()]
-
-    # remover duplicatas por url + preco
     df = df.drop_duplicates(subset=["url", "preco"])
 
-    # reordenar
     df = df[
         [
             "nome",
@@ -329,26 +348,16 @@ def scrape_professional_type(tipo):
 
 
 def main():
-    # Psicólogos
     df_psic = scrape_professional_type("psicologo")
     if not df_psic.empty:
-        df_psic.to_csv(
-            "doctoralia_psicologos.csv",
-            index=False,
-            encoding="utf-8-sig",
-        )
+        df_psic.to_csv("doctoralia_psicologos.csv", index=False, encoding="utf-8-sig")
         print("Salvo doctoralia_psicologos.csv:", len(df_psic), "linhas")
     else:
         print("Nenhum psicólogo com preço encontrado.")
 
-    # Psiquiatras
     df_psiq = scrape_professional_type("psiquiatra")
     if not df_psiq.empty:
-        df_psiq.to_csv(
-            "doctoralia_psiquiatras.csv",
-            index=False,
-            encoding="utf-8-sig",
-        )
+        df_psiq.to_csv("doctoralia_psiquiatras.csv", index=False, encoding="utf-8-sig")
         print("Salvo doctoralia_psiquiatras.csv:", len(df_psiq), "linhas")
     else:
         print("Nenhum psiquiatra com preço encontrado.")

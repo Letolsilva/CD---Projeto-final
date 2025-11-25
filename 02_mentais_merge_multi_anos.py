@@ -44,7 +44,7 @@ PATH_CAPS = os.path.join(BASE_MENTAIS, "CAPS_Municipios.csv")
 # ----------------------------------------------------------------------
 
 COL_MUN_IBGE_MENT = "ID_MUNICIP"  # MENTBRxx
-COL_CID_MENT = "ID_AGRAVO"
+COL_CID_MENT = "DIAG_ESP"
 COL_ANO_MENT = "NU_ANO"
 
 COL_MUN_IBGE_BR = "CD_MUN"
@@ -101,7 +101,17 @@ def carregar_mentais() -> pd.DataFrame:
 
 
 def filtrar_f32_f41(ment: pd.DataFrame) -> pd.DataFrame:
+    """
+    Mantém apenas registros com CID-10 começando em F32 (depressão) ou F41 (ansiedade).
+    """
     df = ment.copy()
+
+    if COL_CID_MENT not in df.columns:
+        raise KeyError(
+            f"Coluna {COL_CID_MENT!r} não encontrada no MENT. "
+            f"Colunas disponíveis: {list(df.columns)}"
+        )
+
     df[COL_CID_MENT] = df[COL_CID_MENT].astype(str).str.upper().str.strip()
     mask = df[COL_CID_MENT].str.startswith(("F32", "F41"), na=False)
     filtrado = df[mask].copy()
