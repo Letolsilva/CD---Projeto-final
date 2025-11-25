@@ -1,0 +1,13 @@
+﻿cidade_oficial,uf_oficial,cidade_norm,tipo_profissional,qtd_profissionais,preco_medio,preco_mediano,preco_min,preco_max,cod_mun_ibge,nome_norm,SIGLA_UF,ano,casos_f32_f41,UF,MunicÃ­pio,Qtd_caps
+Belo Horizonte,MG,belo horizonte,psicologo,657,223.22222222222223,150.0,2.0,15000.0,0310620,belo horizonte,MG,,,MG,Belo Horizonte,16
+Belo Horizonte,MG,belo horizonte,psiquiatra,215,504.2744186046512,490.0,2.0,1300.0,0310620,belo horizonte,MG,,,MG,Belo Horizonte,16
+Porto Alegre,RS,porto alegre,psicologo,489,200.4621676891616,150.0,1.0,15000.0,0431490,porto alegre,RS,,,RS,Porto Alegre,13
+Porto Alegre,RS,porto alegre,psiquiatra,128,421.2421875,400.0,150.0,2000.0,0431490,porto alegre,RS,,,RS,Porto Alegre,13
+Rio de Janeiro,RJ,rio de janeiro,psicologo,826,267.6694915254237,180.0,2.0,35000.0,0330455,rio de janeiro,RJ,,,RJ,Rio De Janeiro,33
+Rio de Janeiro,RJ,rio de janeiro,psicoterapeuta,2,445.0,445.0,400.0,490.0,0330455,rio de janeiro,RJ,,,RJ,Rio De Janeiro,33
+Rio de Janeiro,RJ,rio de janeiro,psiquiatra,293,505.8976109215017,500.0,2.0,2000.0,0330455,rio de janeiro,RJ,,,RJ,Rio De Janeiro,33
+Salvador,BA,salvador,psicologo,360,205.83055555555555,150.0,2.0,12000.0,0292740,salvador,BA,,,BA,Salvador,18
+Salvador,BA,salvador,psiquiatra,77,506.7792207792208,500.0,2.0,1000.0,0292740,salvador,BA,,,BA,Salvador,18
+São Paulo,SP,sao paulo,psicologo,1164,259.8823024054983,200.0,2.0,5000.0,0355030,sao paulo,SP,,,SP,SÃ£o Paulo,79
+São Paulo,SP,sao paulo,psicoterapeuta,30,263.1666666666667,182.5,100.0,800.0,0355030,sao paulo,SP,,,SP,SÃ£o Paulo,79
+São Paulo,SP,sao paulo,psiquiatra,436,554.9518348623853,545.0,2.0,2500.0,0355030,sao paulo,SP,,,SP,SÃ£o Paulo,79
