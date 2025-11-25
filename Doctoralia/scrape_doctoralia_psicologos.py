@@ -63,7 +63,7 @@ SPECIALIZATIONS = {
 }
 
 # Controles básicos
-MAX_PAGES = 10  # máximo de páginas por cidade/especialidade
+MAX_PAGES = 100  # máximo de páginas por cidade/especialidade
 DELAY_RANGE = (1.0, 2.0)  # segundos entre requisições
 
 
