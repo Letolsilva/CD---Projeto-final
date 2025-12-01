@@ -1,7 +1,7 @@
 ﻿cidade_oficial,uf_oficial,cidade_norm,tipo_profissional,qtd_profissionais,preco_medio,preco_mediano,preco_min,preco_max,cod_mun_ibge,nome_norm,SIGLA_UF,ano,casos_f32_f41,Qtd_caps
 Belo Horizonte,MG,belo horizonte,psicologo,663,221.08748114630467,150.0,2.0,15000.0,0310620,belo horizonte,MG,2023.0,14.0,16.0
 Belo Horizonte,MG,belo horizonte,psiquiatra,206,503.9271844660194,485.0,2.0,1300.0,0310620,belo horizonte,MG,2023.0,14.0,16.0
-Belém,AL,belem,psicologo,113,490.6283185840708,150.0,2.0,30000.0,0270080,belem,AL,,,
+Belém,AL,belem,psicologo,112,227.1517857142857,150.0,2.0,2990.0,0270080,belem,AL,,,
 Brasília,DF,brasilia,psicologo,633,244.95260663507108,180.0,1.0,12500.0,0530010,brasilia,DF,2023.0,8.0,13.0
 Brasília,DF,brasilia,psiquiatra,108,552.0925925925926,500.0,220.0,1300.0,0530010,brasilia,DF,2023.0,8.0,13.0
 Campinas,SP,campinas,psicologo,326,327.54294478527606,150.0,2.0,45000.0,0350950,campinas,SP,2023.0,13.0,13.0
