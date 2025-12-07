@@ -28,7 +28,7 @@ PATH_BC_PSICO = os.path.join(BASE_BOACONSULTA, "psicologos_boaconsulta.csv")
 PATH_BC_PSIQ = os.path.join(BASE_BOACONSULTA, "psiquiatras_boaconsulta.csv")
 PATH_BC_PSICOT = os.path.join(BASE_BOACONSULTA, "psicoterapeutas_boaconsulta.csv")
 
-# Slugs que você usou nos scraps
+
 CITY_SLUG_TO_NAME_UF = {
     "sao-paulo-sp": ("São Paulo", "SP"),
     "rio-de-janeiro-rj": ("Rio de Janeiro", "RJ"),
@@ -40,7 +40,7 @@ CITY_SLUG_TO_NAME_UF = {
     "curitiba-pr": ("Curitiba", "PR"),
     "recife-pe": ("Recife", "PE"),
     "goiania-go": ("Goiânia", "GO"),
-    "belem-al": ("Belém", "AL"),  # conforme aparece na plataforma
+    "belem-al": ("Belém", "AL"),
     "porto-alegre-rs": ("Porto Alegre", "RS"),
     "guarulhos-sp": ("Guarulhos", "SP"),
     "campinas-sp": ("Campinas", "SP"),
@@ -63,7 +63,6 @@ def normalize_str(s: str) -> str:
 
 def load_doctoralia_psicologos(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
-    # tira linhas de "xx opiniões"
     df = df[~df["nome"].astype(str).str.contains("opini", case=False, na=False)].copy()
     df["fonte"] = "doctoralia"
     df["tipo_profissional"] = "psicologo"
@@ -104,7 +103,6 @@ def aplicar_municipio_oficial(df: pd.DataFrame) -> pd.DataFrame:
             cidade_oficial.append(nome)
             uf_oficial.append(uf_slug)
         else:
-            # fallback: usar o que vier da própria tabela
             cidade_oficial.append(c)
             uf_oficial.append(uf)
 
@@ -123,7 +121,6 @@ def preparar_precos(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.copy()
 
-    # unificar coluna de registro (CRP/CRM) numa só
     if "crp" in df.columns and "crm" in df.columns:
         df["registro"] = df["crp"].fillna(df["crm"])
     elif "crp" in df.columns:
@@ -133,13 +130,10 @@ def preparar_precos(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df["registro"] = None
 
-    # garantir preco numérico
     df["preco"] = pd.to_numeric(df["preco"], errors="coerce")
 
-    # filtrar somente registros com preço
     df = df[df["preco"].notna()].copy()
 
-    # selecionar colunas principais
     cols = [
         "nome",
         "registro",
@@ -156,10 +150,9 @@ def preparar_precos(df: pd.DataFrame) -> pd.DataFrame:
             df[c] = None
 
     df = df[cols]
-    # tirar espaços extras no nome
+
     df["nome"] = df["nome"].astype(str).str.strip()
 
-    # remover duplicados básicos (mesmo nome + cidade + uf + tipo + preço)
     df = df.drop_duplicates(
         subset=["nome", "cidade_oficial", "uf_oficial", "tipo_profissional", "preco"]
     )
@@ -168,7 +161,6 @@ def preparar_precos(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
-    # ------ 1. Carrega bases de preços ------
     print("Carregando Doctoralia psicólogos...")
     doc_psico = load_doctoralia_psicologos(PATH_DOC_PSICO)
 
@@ -184,25 +176,20 @@ def main():
     print("Carregando BoaConsulta psicoterapeutas...")
     bc_psicoter = load_boaconsulta_generic(PATH_BC_PSICOT, "psicoterapeuta")
 
-    # ------ 2. Junta tudo ------
     df_all = pd.concat(
         [doc_psico, doc_psiq, bc_psico, bc_psiq, bc_psicoter],
         ignore_index=True,
     )
 
-    # ------ 3. Define cidade_oficial e uf_oficial de forma consistente ------
     df_all = aplicar_municipio_oficial(df_all)
 
-    # ------ 4. Limpa e padroniza preços ------
     df_prepared = preparar_precos(df_all)
 
-    # ------ 5. Salva dados em nível profissional ------
     os.makedirs("output", exist_ok=True)
     out_prof = os.path.join("output", "dados_precos_unificados.csv")
     df_prepared.to_csv(out_prof, index=False, encoding="utf-8-sig")
     print(f"Salvo: {out_prof} (linhas: {len(df_prepared)})")
 
-    # ------ 6. Agrega por município e tipo de profissional ------
     grp = (
         df_prepared.groupby(
             ["cidade_oficial", "uf_oficial", "cidade_norm", "tipo_profissional"],

@@ -1,18 +1,4 @@
 #!/usr/bin/env python3
-"""
-09_mapa_precos_psicologos_psiquiatras_por_municipio.py
-
-Gera mapas de dispersão geográfica dos preços médios de psicólogos e psiquiatras por município.
-Cada ponto representa um município, colorido conforme o preço médio.
-
-Requer:
-  - pandas
-  - matplotlib
-  - geopandas
-  - unidecode
-
-Salva os gráficos como PNG em 'output/'.
-"""
 
 import os
 import pandas as pd
@@ -20,67 +6,103 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 from unidecode import unidecode
 
-# Caminhos dos arquivos
 PATH_PRECOS = "output/precos_por_municipio.csv"
 PATH_MUN = "t_mentais_datasus-main/BR_Municipios_2023.csv"
 
-# Carregar municípios (com lat/lon)
 mun = pd.read_csv(PATH_MUN, encoding="utf-8")
 mun["codigo_ibge"] = mun["codigo_ibge"].astype(str).str.zfill(7)
 mun["nome_norm"] = mun["nome"].apply(lambda x: unidecode(str(x)).lower())
+mun["uf"] = (
+    mun["codigo_ibge"]
+    .str[:2]
+    .map(
+        {
+            "11": "RO",
+            "12": "AC",
+            "13": "AM",
+            "14": "RR",
+            "15": "PA",
+            "16": "AP",
+            "17": "TO",
+            "21": "MA",
+            "22": "PI",
+            "23": "CE",
+            "24": "RN",
+            "25": "PB",
+            "26": "PE",
+            "27": "AL",
+            "28": "SE",
+            "29": "BA",
+            "31": "MG",
+            "32": "ES",
+            "33": "RJ",
+            "35": "SP",
+            "41": "PR",
+            "42": "SC",
+            "43": "RS",
+            "50": "MS",
+            "51": "MT",
+            "52": "GO",
+            "53": "DF",
+        }
+    )
+)
 
-# Carregar preços
 precos = pd.read_csv(PATH_PRECOS, encoding="utf-8")
 precos["cidade_norm"] = precos["cidade_norm"].apply(lambda x: unidecode(str(x)).lower())
 
-# Função para gerar mapa
+df_merged = precos.merge(mun, left_on="cidade_norm", right_on="nome_norm", how="left")
+df_merged = df_merged.dropna(subset=["latitude", "longitude", "preco_medio"])
 
+df_uf = df_merged.groupby(["uf_oficial", "tipo_profissional"], as_index=False).agg(
+    preco_medio=("preco_medio", "mean"),
+    latitude=("latitude", "mean"),
+    longitude=("longitude", "mean"),
+)
 
-def plot_mapa_precos(tipo, preco_col, output_file):
-    df = precos[precos["tipo_profissional"] == tipo].copy()
-    df = df.merge(mun, left_on="cidade_norm", right_on="nome_norm", how="left")
-    df = df.dropna(subset=["latitude", "longitude", preco_col])
-    if df.empty:
+url_brasil = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
+brasil = gpd.read_file(url_brasil)
+
+fig, axes = plt.subplots(1, 2, figsize=(20, 12))
+
+for idx, tipo in enumerate(["psicologo", "psiquiatra"]):
+    ax = axes[idx]
+    brasil.plot(ax=ax, color="#f0f0f0", edgecolor="gray")
+
+    df_tipo = df_uf[df_uf["tipo_profissional"] == tipo].copy()
+
+    if df_tipo.empty:
         print(f"❌ Nenhum dado disponível para {tipo}.")
-        return
-    # Criar GeoDataFrame
+        continue
+
     gdf = gpd.GeoDataFrame(
-        df,
-        geometry=gpd.points_from_xy(df["longitude"], df["latitude"]),
+        df_tipo,
+        geometry=gpd.points_from_xy(df_tipo["longitude"], df_tipo["latitude"]),
         crs="EPSG:4326",
     )
-    # Mapa base do Brasil
-    url_brasil = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
-    brasil = gpd.read_file(url_brasil)
-    fig, ax = plt.subplots(figsize=(10, 12))
-    brasil.plot(ax=ax, color="#f0f0f0", edgecolor="gray")
-    # Plotar pontos coloridos pelo preço
+
     gdf.plot(
         ax=ax,
-        column=preco_col,
+        column="preco_medio",
         cmap="viridis",
-        markersize=40,
+        markersize=200,
         alpha=0.85,
         edgecolor="black",
-        linewidth=0.5,
+        linewidth=1,
         legend=True,
-        legend_kwds={"label": f"Preço médio de {tipo} (R$)", "shrink": 0.6},
+        legend_kwds={"label": f"Preço médio (R$)", "shrink": 0.6},
     )
-    plt.title(f"Dispersão geográfica dos preços médios de {tipo}")
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
-    plt.tight_layout()
-    os.makedirs("output", exist_ok=True)
-    plt.savefig(output_file, dpi=200)
-    plt.close()
-    print(f"✅ Mapa de preços de {tipo} salvo em '{output_file}'.")
 
+    ax.set_title(
+        f"Preços médios de {tipo.capitalize()} por Estado", fontsize=14, weight="bold"
+    )
+    ax.set_xlabel("Longitude", fontsize=12)
+    ax.set_ylabel("Latitude", fontsize=12)
 
-# Psicólogos
-plot_mapa_precos(
-    "psicologo", "preco_medio", "output/mapa_precos_psicologos_por_municipio.png"
-)
-# Psiquiatras
-plot_mapa_precos(
-    "psiquiatra", "preco_medio", "output/mapa_precos_psiquiatras_por_municipio.png"
+plt.tight_layout()
+os.makedirs("output", exist_ok=True)
+plt.savefig("output/mapa_precos_psicologo_psiquiatra_por_uf.png", dpi=200)
+plt.close()
+print(
+    "✅ Mapa comparativo de preços por estado salvo em 'output/mapa_precos_psicologo_psiquiatra_por_uf.png'."
 )

@@ -1,17 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-08_bar_caps_por_cidade.py
-
-Gera gráfico de barras com o número de CAPS por cidade (município).
-Requer:
-    - pandas
-    - matplotlib
-    - seaborn
-
-Salva o gráfico como 'figuras/bar_caps_por_cidade.png'.
-"""
-
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -25,8 +13,6 @@ if not os.path.exists(PATH_CAPS):
 caps = pd.read_csv(PATH_CAPS, encoding="utf-8")
 print("Colunas lidas:", list(caps.columns))
 
-
-# ------------------ AGRUPAR POR MUNICÍPIO (SOMANDO Qtd_caps) ------------------
 caps_city = (
     caps.groupby(["Município", "UF"], as_index=False)["Qtd_caps"]
     .sum()
@@ -34,12 +20,8 @@ caps_city = (
     .sort_values("qtd_caps", ascending=False)
 )
 
-print(caps_city.head())  # só pra conferir no terminal
+print(caps_city.head())
 
-# Se quiser, pode limitar aos Top N cidades (ex.: 20)
-# caps_city = caps_city.head(20)
-
-# ----------------------------- PLOT ------------------------------------------
 os.makedirs("figuras", exist_ok=True)
 
 sns.set(style="whitegrid")
@@ -51,7 +33,6 @@ plt.title("Número de CAPS por UF")
 plt.xlabel("UF")
 plt.ylabel("Quantidade de CAPS")
 
-# Mostrar os valores em cima das barras (opcional, mas fica bonito)
 for p in ax.patches:
     height = p.get_height()
     ax.annotate(
@@ -63,7 +44,6 @@ for p in ax.patches:
     )
 
 plt.tight_layout()
-
 
 out_path = "figuras/bar_caps_por_cidade.png"
 plt.figure(figsize=(12, 8))

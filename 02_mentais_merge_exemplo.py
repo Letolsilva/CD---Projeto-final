@@ -21,9 +21,6 @@ import os
 import unicodedata
 import pandas as pd
 
-# ----------------------------------------------------------------------
-# CONFIGURAÇÕES DE CAMINHO
-# ----------------------------------------------------------------------
 
 BASE_MENTAIS = "t_mentais_datasus-main"
 
@@ -39,25 +36,13 @@ PATH_PRECOS_MUN = os.path.join("output", "precos_por_municipio.csv")
 PATH_MUNICIPIOS = os.path.join(BASE_MENTAIS, "BR_Municipios_2023.csv")
 PATH_CAPS = os.path.join(BASE_MENTAIS, "CAPS_Municipios.csv")
 
-# ----------------------------------------------------------------------
-# COLUNAS
-# ----------------------------------------------------------------------
+COL_MUN_IBGE_MENT = "ID_MUNICIP"
+COL_CID_MENT = "DIAG_ESP"
+COL_ANO_MENT = "NU_ANO"
 
-# MENT (exemplo de cabeçalho real do MENTBR24 que você mandou):
-# "TP_NOT","ID_AGRAVO","DT_NOTIFIC","SEM_NOT","NU_ANO","SG_UF_NOT","ID_MUNICIP",...
-COL_MUN_IBGE_MENT = "ID_MUNICIP"  # código do município (7 dígitos IBGE)
-COL_CID_MENT = "DIAG_ESP"  # CID-10
-COL_ANO_MENT = "NU_ANO"  # ano da notificação
-
-# BR_Municipios_2023.csv (da base do GitHub)
-# cabeçalho bruto: codigo_ibge,nome,latitude,longitude,capital,codigo_uf,siafi_id,ddd,fuso_horario
-COL_MUN_IBGE_BR = "CD_MUN"  # código do município (string, 7 dígitos)
-COL_NOME_MUN_BR = "NM_MUN"  # nome do município (string)
-COL_UF_BR = "SIGLA_UF"  # UF (sigla, ex: SP, MG)
-
-# ----------------------------------------------------------------------
-# FUNÇÕES AUXILIARES
-# ----------------------------------------------------------------------
+COL_MUN_IBGE_BR = "CD_MUN"
+COL_NOME_MUN_BR = "NM_MUN"
+COL_UF_BR = "SIGLA_UF"
 
 
 def normalize_str(s: str) -> str:
@@ -68,11 +53,6 @@ def normalize_str(s: str) -> str:
     s = unicodedata.normalize("NFD", s)
     s = "".join(ch for ch in s if unicodedata.category(ch) != "Mn")
     return " ".join(s.split())
-
-
-# ----------------------------------------------------------------------
-# CARREGAR MENTAIS (MENTBR20–24)
-# ----------------------------------------------------------------------
 
 
 def carregar_mentais() -> pd.DataFrame:
@@ -88,12 +68,10 @@ def carregar_mentais() -> pd.DataFrame:
             continue
 
         print(f"Lendo {path}...")
-        # CSV com aspas e vírgula: "TP_NOT","ID_AGRAVO",...
         df = pd.read_csv(path, sep=None, engine="python", encoding="latin1")
 
-        # garantir que COL_ANO_MENT exista
         if COL_ANO_MENT not in df.columns:
-            sufixo = fname[-6:-4]  # "20", "21", ...
+            sufixo = fname[-6:-4]
             ano_do_arquivo = int("20" + sufixo)
             df[COL_ANO_MENT] = ano_do_arquivo
 
@@ -143,11 +121,6 @@ def agregar_mentais_por_municipio_ano(df: pd.DataFrame) -> pd.DataFrame:
     return grp
 
 
-# ----------------------------------------------------------------------
-# MUNICÍPIOS IBGE
-# ----------------------------------------------------------------------
-
-
 def carregar_municipios():
     """
     Carrega BR_Municipios_2023.csv do repositório t_mentais_datasus,
@@ -161,11 +134,9 @@ def carregar_municipios():
     """
     print("\n=== Carregando BR_Municipios_2023 ===")
 
-    # deixa o pandas descobrir o separador automaticamente (',' ou ';')
     df = pd.read_csv(PATH_MUNICIPIOS, sep=None, engine="python")
     print("Colunas BR_Municipios_2023 (bruto):", list(df.columns))
 
-    # Renomear para o padrão interno
     df = df.rename(
         columns={
             "codigo_ibge": "CD_MUN",
@@ -180,10 +151,8 @@ def carregar_municipios():
             "Confere se o arquivo é o oficial do repositório t_mentais_datasus."
         )
 
-    # código do município: string com 7 dígitos
     df["CD_MUN"] = df["CD_MUN"].astype(str).str.zfill(7)
 
-    # código numérico de UF -> sigla UF (mapa IBGE)
     uf_map = {
         11: "RO",
         12: "AC",
@@ -220,16 +189,10 @@ def carregar_municipios():
     else:
         df["SIGLA_UF"] = ""
 
-    # nome normalizado
     df["nome_norm"] = df["NM_MUN"].apply(normalize_str)
 
     print("Colunas BR_Municipios_2023 (ajustado):", list(df.columns))
     return df
-
-
-# ----------------------------------------------------------------------
-# CAPS
-# ----------------------------------------------------------------------
 
 
 def carregar_caps() -> pd.DataFrame:
@@ -244,13 +207,11 @@ def carregar_caps() -> pd.DataFrame:
     df = pd.read_csv(PATH_CAPS, sep=None, engine="python", encoding="latin1")
     print("Colunas CAPS_Municipios (bruto):", list(df.columns))
 
-    # Ajustar nomes de coluna conforme arquivo original do GitHub:
-    # esperado: UF, IBGE, Município, Qtd_caps
     df = df.rename(
         columns={
             "IBGE": "CD_MUN",
             "Município": "NM_MUN",
-            "Municipio": "NM_MUN",  # caso venha sem acento
+            "Municipio": "NM_MUN",
         }
     )
 
@@ -261,11 +222,6 @@ def carregar_caps() -> pd.DataFrame:
             "⚠️ Coluna IBGE não encontrada em CAPS_Municipios.csv, sem join por município."
         )
     return df
-
-
-# ----------------------------------------------------------------------
-# PREÇOS POR MUNICÍPIO
-# ----------------------------------------------------------------------
 
 
 def carregar_precos_municipio() -> pd.DataFrame:
@@ -307,13 +263,7 @@ def anexar_ibge_a_precos(
     return merged
 
 
-# ----------------------------------------------------------------------
-# MAIN
-# ----------------------------------------------------------------------
-
-
 def main():
-    # 1) Preços agregados por município (script 01)
     if not os.path.exists(PATH_PRECOS_MUN):
         raise FileNotFoundError(
             f"Arquivo {PATH_PRECOS_MUN} não encontrado. "
@@ -321,38 +271,31 @@ def main():
         )
     precos = carregar_precos_municipio()
 
-    # 2) Tabela de municípios IBGE
     if not os.path.exists(PATH_MUNICIPIOS):
         raise FileNotFoundError(f"Arquivo {PATH_MUNICIPIOS} não encontrado.")
     municipios = carregar_municipios()
 
-    # 3) Vincular código IBGE aos preços
     precos_ibge = anexar_ibge_a_precos(precos, municipios)
     print(
         "Linhas de precos com cod_mun_ibge preenchido:",
         precos_ibge["cod_mun_ibge"].notna().sum(),
     )
 
-    # 4) Dados de CAPS (opcional)
     caps = carregar_caps()
 
-    # 5) MENTBR20–24 (transtornos mentais relacionados ao trabalho)
     ment = carregar_mentais()
     ment_filt = filtrar_f32_f41(ment)
     ment_agg = agregar_mentais_por_municipio_ano(ment_filt)
 
-    # 6) Exemplo: analisar um ano específico (por ex. 2023)
     ano_analise = 2023
     ment_ano = ment_agg[ment_agg["ano"] == ano_analise].copy()
 
-    # Join preços x casos F32/F41
     base = precos_ibge.merge(
         ment_ano,
         on="cod_mun_ibge",
-        how="left",  # mantém todos os municípios com preço, mesmo sem casos
+        how="left",
     )
 
-    # 7) Anexar info de CAPS, se existir código compatível
     if not caps.empty and "CD_MUN" in caps.columns:
         base = base.merge(
             caps[["CD_MUN", "Qtd_caps"]]
@@ -365,7 +308,6 @@ def main():
         )
         base = base.drop(columns=["CD_MUN"], errors="ignore")
 
-    # 8) Exemplo de impressão: psicólogos
     print("\nExemplo – psicólogos, preço médio vs. casos F32/F41 (primeiras linhas):")
     base_psico = base[base["tipo_profissional"] == "psicologo"].copy()
     print(
@@ -374,7 +316,6 @@ def main():
         ].head(15)
     )
 
-    # 9) Salvar base integrada para usar em notebooks / análise
     os.makedirs("output", exist_ok=True)
     out_path = os.path.join("output", f"base_precos_mentais_{ano_analise}.csv")
     base.to_csv(out_path, index=False, encoding="utf-8-sig")

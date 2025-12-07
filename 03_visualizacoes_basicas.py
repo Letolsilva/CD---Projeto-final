@@ -16,7 +16,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Caminho da base integrada
+
 BASE_PATH = os.path.join("output", "base_precos_mentais_2020_2024.csv")
 
 
@@ -31,19 +31,13 @@ def main():
     print("Colunas da base integrada:", list(df.columns))
     print("Primeiras linhas:\n", df.head())
 
-    # Alguns ajustes básicos
     if "casos_f32_f41" in df.columns:
         df["casos_f32_f41"] = df["casos_f32_f41"].fillna(0)
 
-    # Filtrar linhas com preço válido
     df = df[df["preco_medio"].notna()].copy()
 
-    # Cria pasta para figuras
     os.makedirs("figuras", exist_ok=True)
 
-    # --------------------------------------------------------
-    # 1) Boxplot de preço por tipo de profissional
-    # --------------------------------------------------------
     if "tipo_profissional" in df.columns:
         plt.figure(figsize=(8, 5))
         sns.boxplot(
@@ -59,15 +53,11 @@ def main():
         plt.close()
         print("Figura salva: figuras/boxplot_preco_por_tipo.png")
 
-    # --------------------------------------------------------
-    # 2) Barras: preço médio por cidade (psicólogos)
-    # --------------------------------------------------------
     if "tipo_profissional" in df.columns:
         df_psico = df[df["tipo_profissional"] == "psicologo"].copy()
     else:
         df_psico = df.copy()
 
-    # ordenar cidades pelo preço médio
     df_psico_city = (
         df_psico.groupby(["cidade_oficial", "uf_oficial"], as_index=False)[
             "preco_medio"
@@ -93,9 +83,6 @@ def main():
     plt.close()
     print("Figura salva: figuras/bar_preco_psicologo_por_cidade.png")
 
-    # --------------------------------------------------------
-    # 3) Barras: quantidade de profissionais por cidade
-    # --------------------------------------------------------
     if "qtd_profissionais" in df.columns:
         df_qtd = (
             df.groupby(["cidade_oficial", "uf_oficial"], as_index=False)[
@@ -122,61 +109,129 @@ def main():
         plt.close()
         print("Figura salva: figuras/bar_qtd_prof_por_cidade.png")
 
-    # --------------------------------------------------------
-    # 4) Se houver CAPS: relação CAPS x preço médio
-    # --------------------------------------------------------
     if "Qtd_caps" in df.columns:
-        df_caps = (
-            df.groupby(["cidade_oficial", "uf_oficial"], as_index=False)
+        df_caps_uf = (
+            df.groupby("uf_oficial", as_index=False)
             .agg(
                 preco_medio=("preco_medio", "mean"),
-                qtd_caps=("Qtd_caps", "max"),  # assume valor único por município
+                qtd_caps=("Qtd_caps", "sum"),
             )
             .dropna(subset=["qtd_caps"])
         )
 
-        if not df_caps.empty:
-            plt.figure(figsize=(6, 5))
+        if not df_caps_uf.empty:
+            plt.figure(figsize=(8, 6))
             sns.scatterplot(
-                data=df_caps,
+                data=df_caps_uf,
                 x="qtd_caps",
                 y="preco_medio",
                 hue="uf_oficial",
+                s=150,
+                alpha=0.7,
+                legend="full",
             )
-            plt.title("CAPS x preço médio da sessão (por município)")
-            plt.xlabel("Quantidade de CAPS no município")
+            sns.regplot(
+                data=df_caps_uf,
+                x="qtd_caps",
+                y="preco_medio",
+                scatter=False,
+                color="black",
+                line_kws={"linewidth": 1.5, "linestyle": "--"},
+            )
+            plt.title("CAPS x preço médio da sessão por Estado")
+            plt.xlabel("Total de CAPS no estado")
             plt.ylabel("Preço médio da sessão (R$)")
+            plt.legend(
+                title="Estado",
+                bbox_to_anchor=(1.05, 1),
+                loc="upper left",
+                ncol=2,
+                fontsize=8,
+            )
             plt.tight_layout()
-            plt.savefig("figuras/scatter_caps_preco.png", dpi=150)
+            plt.savefig("figuras/scatter_caps_preco_por_uf.png", dpi=150)
             plt.close()
-            print("Figura salva: figuras/scatter_caps_preco.png")
+            print("Figura salva: figuras/scatter_caps_preco_por_uf.png")
         else:
             print("Nenhum dado de CAPS válido para scatter.")
 
-    # --------------------------------------------------------
-    # 5) (Quando tivermos casos_f32_f41 != 0)
-    #    Scatter preço x casos de transtornos
-    # --------------------------------------------------------
     if "casos_f32_f41" in df.columns:
-        df_casos = df.groupby(["cidade_oficial", "uf_oficial"], as_index=False).agg(
+        df_casos_uf = df.groupby("uf_oficial", as_index=False).agg(
             preco_medio=("preco_medio", "mean"),
             casos_f32_f41=("casos_f32_f41", "sum"),
         )
 
-        # mesmo se tudo for zero, gera o gráfico (vai virar uma linha no eixo X)
-        plt.figure(figsize=(6, 5))
+        plt.figure(figsize=(8, 6))
         sns.scatterplot(
-            data=df_casos,
+            data=df_casos_uf,
             x="casos_f32_f41",
             y="preco_medio",
+            hue="uf_oficial",
+            s=150,
+            alpha=0.7,
+            legend="full",
         )
-        plt.title("Casos F32/F41 x preço médio (por município)")
-        plt.xlabel("Nº de casos F32/F41 (2020-2024)")
+        sns.regplot(
+            data=df_casos_uf,
+            x="casos_f32_f41",
+            y="preco_medio",
+            scatter=False,
+            color="black",
+            line_kws={"linewidth": 1.5, "linestyle": "--"},
+        )
+        plt.title("Casos F32/F41 x preço médio por Estado")
+        plt.xlabel("Total de casos F32/F41 no estado (2020-2024)")
         plt.ylabel("Preço médio da sessão (R$)")
+        plt.legend(
+            title="Estado",
+            bbox_to_anchor=(1.05, 1),
+            loc="upper left",
+            ncol=2,
+            fontsize=8,
+        )
         plt.tight_layout()
-        plt.savefig("figuras/scatter_casos_preco.png", dpi=150)
+        plt.savefig("figuras/scatter_casos_preco_por_uf.png", dpi=150)
         plt.close()
-        print("Figura salva: figuras/scatter_casos_preco.png")
+        print("Figura salva: figuras/scatter_casos_preco_por_uf.png")
+
+    if "qtd_profissionais" in df.columns:
+        df_prof_uf = df.groupby("uf_oficial", as_index=False).agg(
+            preco_medio=("preco_medio", "mean"),
+            qtd_profissionais=("qtd_profissionais", "sum"),
+        )
+
+        plt.figure(figsize=(8, 6))
+        sns.scatterplot(
+            data=df_prof_uf,
+            x="qtd_profissionais",
+            y="preco_medio",
+            hue="uf_oficial",
+            s=150,
+            alpha=0.7,
+            legend="full",
+        )
+        sns.regplot(
+            data=df_prof_uf,
+            x="qtd_profissionais",
+            y="preco_medio",
+            scatter=False,
+            color="black",
+            line_kws={"linewidth": 1.5, "linestyle": "--"},
+        )
+        plt.title("Preço médio x Quantidade de profissionais por Estado")
+        plt.xlabel("Total de profissionais no estado")
+        plt.ylabel("Preço médio da sessão (R$)")
+        plt.legend(
+            title="Estado",
+            bbox_to_anchor=(1.05, 1),
+            loc="upper left",
+            ncol=2,
+            fontsize=8,
+        )
+        plt.tight_layout()
+        plt.savefig("figuras/scatter_preco_profissionais_por_uf.png", dpi=150)
+        plt.close()
+        print("Figura salva: figuras/scatter_preco_profissionais_por_uf.png")
 
     print("\n✅ Visualizações geradas na pasta 'figuras/'.")
 
